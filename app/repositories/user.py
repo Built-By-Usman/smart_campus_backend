@@ -6,11 +6,23 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.services.hashing import get_hashed_password
 
 
-def get(db:Session):
+def all(db:Session):
     users=db.query(UserModel).all()
     if not users:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="There is no user available in database")
     return users;  
+
+
+def all_students(db:Session):
+    students= db.query(UserModel).filter(UserModel.role=="student").all()
+    if not students:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No student available in database")
+    return students
+def all_teachers(db:Session):
+    teachers= db.query(UserModel).filter(UserModel.role=="teacher").all()
+    if not teachers:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No teacher available in database")
+    return teachers
 
 def create(request:UserCreate,db:Session):
     existing_user=db.query(UserModel).filter(UserModel.email==request.email).first()
@@ -30,7 +42,10 @@ def create(request:UserCreate,db:Session):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
     
 def update(id:int,request:UserCreate,db:Session):
-     user=db.query(UserModel).filter(id==UserModel.id)
+     existing_email=db.query(UserModel).filter(UserModel.email==request.email).first()
+     if existing_email:
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="This email is already registered")
+     user=db.query(UserModel).filter(UserModel.id==id)
 
      if not user:
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"User with id:{id} is not available")

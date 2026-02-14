@@ -8,10 +8,12 @@ class AssignmentBase(BaseModel):
 
 class AssignmentCreate(AssignmentBase):
     course_id:int
+    teacher_id:int
 
 class AssignmentResponse(AssignmentBase):
     id:int
     course_id:int
+    teacher_id:int
 
     class Config:
         from_attributes=True

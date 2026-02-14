@@ -10,3 +10,4 @@ class AssignmentModel(base):
     due_date = Column(DateTime,nullable=False)
 
     course_id=Column(Integer,ForeignKey("courses.id"))
+    teacher_id=Column(Integer,ForeignKey("users.id"))
