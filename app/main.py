@@ -1,11 +1,26 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # 1. Import Middleware
 
 from app.db.database import engine
 from app.db.base import base
-
-from app.routers import auth,user,course,assignment
+from app.routers import auth, user, course, assignment
 
 app = FastAPI()
+
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
 base.metadata.create_all(bind=engine)
 
