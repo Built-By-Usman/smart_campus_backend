@@ -27,7 +27,7 @@ class UserResponse(UserBase):
 
 
 class Token(BaseModel):
-    id:int
+    user:UserResponse
     access_token: str
     token_type: str
 

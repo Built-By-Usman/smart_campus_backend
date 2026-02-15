@@ -23,7 +23,7 @@ def login(request:OAuth2PasswordRequestForm = Depends(),db:Session=Depends(get_d
     
     access_token = create_access_token(data={"sub": user.email})
     return Token(
-    id=user.id,
+    user=user,
     access_token=access_token,
     token_type="bearer"
 )
