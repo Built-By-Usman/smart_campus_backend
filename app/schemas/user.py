@@ -20,6 +20,7 @@ class UserResponse(UserBase):
     id:int
     role:str
     is_active:bool
+    is_authenticated:bool
     created_at:datetime
 
     class Config:
