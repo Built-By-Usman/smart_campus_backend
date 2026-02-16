@@ -24,6 +24,30 @@ def all_teachers(db:Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No teacher available in database")
     return teachers
 
+
+def unauthenticated_teachers(db:Session):
+    unauthenticated_teachers = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher").all()
+    if not unauthenticated_teachers:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unauthenticated teacher available")
+    return unauthenticated_teachers
+
+def unauthenticated_students(db:Session):
+    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher").all()
+    if not unauthenticated_students:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unauthenticated student available")
+    return unauthenticated_students
+
+
+def approve_user(id:int,db:Session):
+    user = db.query(UserModel).filter(UserModel.id==id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
+    user.is_authenticated=True
+    db.commit()
+    db.refresh(user)
+    return user
+    
+
 def create(request:UserCreate,db:Session):
     existing_user=db.query(UserModel).filter(UserModel.email==request.email).first()
     if existing_user:

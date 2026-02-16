@@ -7,3 +7,4 @@ from app.models.assignment import AssignmentModel
 from app.models.submission import SubmissionModel
 from app.models.attendance import AttendanceModel
 from app.models.complaint import ComplaintModel
+from app.models.admin import AdminModel

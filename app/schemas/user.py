@@ -15,11 +15,17 @@ class UserCreate(UserBase):
 class UserLogin(BaseModel):
     email:EmailStr
     password:str
+    role:str
+
+class AdminResponce(BaseModel):
+    email:EmailStr
+    id:int
 
 class UserResponse(UserBase):
     id:int
     role:str
     is_active:bool
+    is_authenticated=True
     is_authenticated:bool
     created_at:datetime
 
@@ -29,6 +35,13 @@ class UserResponse(UserBase):
 
 class Token(BaseModel):
     user:UserResponse
+
+    access_token: str
+    token_type: str
+
+
+class TokenForAdmin(BaseModel):
+    admin:AdminResponce
     access_token: str
     token_type: str
 
