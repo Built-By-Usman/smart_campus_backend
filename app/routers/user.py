@@ -4,22 +4,22 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserResponse,UserCreate
 from app.db.database import get_db
 from typing import List
-from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user
+from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,count_students
 from app.services.oauth2 import get_current_user
 
 
 router=APIRouter(
     prefix='/user',
-    tags=['user']
+    tags=['User']
 )
 
 @router.get('/',response_model=List[UserResponse])
-def get_all_user(db:Session=Depends(get_db)):
+def get_all_user(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return all(db)
 
 
 @router.get('/count_teachers')
-def count_all_teachers(db:Session=Depends(get_db)):
+def count_all_teachers(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    teachers=db.query(UserModel).filter(UserModel.role=='teacher',UserModel.is_authenticated==True).count()
 
    return {
@@ -28,35 +28,31 @@ def count_all_teachers(db:Session=Depends(get_db)):
 
 
 @router.get('/count_students')
-def count_all_students(db:Session=Depends(get_db)):
-   students=db.query(UserModel).filter(UserModel.role=='student',UserModel.is_authenticated==True).count()
-
-   return {
-      "total_students":students
-   }
+def count_all_students(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
+   return count_students(db=db)
 
 
 @router.get('/all_students/',response_model=List[UserResponse])
-def get_all_students(db:Session=Depends(get_db)):
+def get_all_students(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return all_students(db=db)
 
 @router.get('/all_teachers/',response_model=List[UserResponse])
-def get_all_teachers(db:Session=Depends(get_db)):
+def get_all_teachers(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return all_teachers(db=db)
    
 
-@router.get('/all_unauthenticated_teachers',response_model=UserResponse)
-def all_unauthenticated_teachers(db:Session=Depends(get_db)):
+@router.get('/all_unauthenticated_teachers',response_model=List[UserResponse])
+def all_unauthenticated_teachers(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return unauthenticated_teachers(db=db)
 
 
-@router.get('/all_unauthenticated_students',response_model=UserResponse)
-def all_unauthenticated_teachers(db:Session=Depends(get_db)):
+@router.get('/all_unauthenticated_students',response_model=List[UserResponse])
+def all_unauthenticated_students(db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return unauthenticated_students(db=db)
 
 
 @router.put('/approve_unauthenticated_user',response_model=UserResponse)
-def approve_unauthenticated_user(id:int,db:Session=Depends(get_db)):
+def approve_unauthenticated_user(id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return approve_user(id=id,db=db)
 
 
@@ -73,5 +69,5 @@ def update_user(request:UserCreate,id:int,db:Session=Depends(get_db),current_use
    return update(id,request,db)
 
 @router.delete('/{id}')
-def delete_user(id:int,db:Session=Depends(get_db)):
+def delete_user(id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return delete(id,db)

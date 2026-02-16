@@ -17,9 +17,12 @@ class UserLogin(BaseModel):
     password:str
     role:str
 
-class AdminResponce(BaseModel):
+class AdminResponse(BaseModel):
     email:EmailStr
     id:int
+
+    class Config:
+        from_attributes=True
 
 class UserResponse(UserBase):
     id:int
@@ -41,7 +44,7 @@ class Token(BaseModel):
 
 
 class TokenForAdmin(BaseModel):
-    admin:AdminResponce
+    admin:AdminResponse
     access_token: str
     token_type: str
 

@@ -32,7 +32,7 @@ def unauthenticated_teachers(db:Session):
     return unauthenticated_teachers
 
 def unauthenticated_students(db:Session):
-    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher").all()
+    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student").all()
     if not unauthenticated_students:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unauthenticated student available")
     return unauthenticated_students
@@ -98,3 +98,12 @@ def delete(id:int,db:Session):
     except SQLAlchemyError as e:
          db.rollback()
          raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
+    
+
+
+def count_students(db:Session):
+    students=db.query(UserModel).filter(UserModel.role=='student',UserModel.is_authenticated==True).count()
+
+    return {
+        "total_students":students
+    }
