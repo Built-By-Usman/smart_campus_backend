@@ -19,6 +19,7 @@ class UserLogin(BaseModel):
 
 class AdminResponse(BaseModel):
     email:EmailStr
+    name:str
     id:int
 
     class Config:
