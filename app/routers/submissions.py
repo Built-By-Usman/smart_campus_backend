@@ -30,3 +30,6 @@ def assignment_updation(submission_id:int,request:SubmissionUpdate,db:Session=De
 @router.delete('/submission_id',status_code=status.HTTP_204_NO_CONTENT)
 def delete_assignment(submission_id:int,db:Session=Depends(get_db),current_user:UserModel=Depends(get_current_user)):
     return delete_submission(submission_id=submission_id,db=db,current_user=current_user)
+
+
+
