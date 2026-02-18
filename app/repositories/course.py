@@ -6,6 +6,7 @@ from app.models.enrollment import EnrollmentModel
 from app.models.user import UserModel
 from app.models.course import CourseModel
 from sqlalchemy.exc import SQLAlchemyError
+from app.models.user import UserModel
 
 
 def all(db:Session):
@@ -19,7 +20,11 @@ def create(request:CourseCreate,db:Session):
     if existing_course:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"Course with {request.course_code} is already exist")
     
-    new_course=CourseModel(name=request.name,teacher_id=request.teacher_id,course_code=request.course_code)
+    teacher=db.query(UserModel).filter(UserModel.id==request.teacher_id).first()
+
+    teacher_name=teacher.name
+    
+    new_course=CourseModel(name=request.name,teacher_id=request.teacher_id,course_code=request.course_code,teacher_name=teacher_name)
 
     try:
         db.add(new_course)
