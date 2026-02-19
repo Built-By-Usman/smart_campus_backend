@@ -121,7 +121,7 @@ def verify(email:EmailStr,otp_code:str,db:Session):
 
     return user
 
-def resend_otp(email:EmailStr,db:Session):
+def resend(email:EmailStr,db:Session):
     otp_code=generate_otp()
     expire_at=otp_expiration()
 

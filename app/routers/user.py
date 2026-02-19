@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserResponse,UserCreate
 from app.db.database import get_db
 from typing import List
-from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,count_students,verify
+from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,count_students,verify,resend
 from app.services.oauth2 import get_current_user
 from pydantic import EmailStr
 
@@ -73,3 +73,7 @@ def update_user(request:UserCreate,id:int,db:Session=Depends(get_db),current_use
 @router.delete('/{id}')
 def delete_user(id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return delete(id,db)
+
+@router.post('/resend_otp')
+def resend_otp(email:EmailStr,db:Session=Depends(get_db)):
+   return resend(email=email,db=db)
