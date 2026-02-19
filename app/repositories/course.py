@@ -20,7 +20,16 @@ def create(request:CourseCreate,db:Session):
     if existing_course:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"Course with {request.course_code} is already exist")
     
+    
     teacher=db.query(UserModel).filter(UserModel.id==request.teacher_id).first()
+    
+    if not teacher:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"No teacher exist with this id")
+    if not teacher.role=="teacher":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"The selected user is not a teacher")
+
+        
+
 
     teacher_name=teacher.name
     
