@@ -43,9 +43,7 @@ def unauthenticated_students(db:Session):
     return unauthenticated_students
 
 
-def approve_user(id:int,db:Session,current_user_role:str):
-    if not current_user_role=="admin":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="You are not authorized to make this changes")
+def approve_user(id:int,db:Session):
     user = db.query(UserModel).filter(UserModel.id==id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
@@ -81,16 +79,14 @@ def create(request:UserCreate,db:Session):
         otp=otp_code
     )
 
-
-
-    try:
-        db.add(otp)
-        db.commit()
-
-        send_email_otp(
+    db.add(otp)
+    db.commit()
+    send_email_otp(
         to_email=request.email,
         otp=otp_code
     )
+    try:
+
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -117,8 +113,42 @@ def verify(email:EmailStr,otp_code:str,db:Session):
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No user found with this email")
+    
+
+    user.is_verified_email=True
+    db.commit()
+    db.refresh(user)
 
     return user
+
+def resend_otp(email:EmailStr,db:Session):
+    otp_code=generate_otp()
+    expire_at=otp_expiration()
+
+    otp=OTPModel(
+        email=otp_code,
+        otp=otp_code,
+        expire_at=expire_at,
+        is_used=False
+    )
+
+    db.add(otp)
+    db.commit()
+
+    send_email_otp(
+        to_email=email,
+        otp=otp_code
+    )
+
+    db.add(otp)
+    db.commit()
+    send_email_otp(
+        to_email=email,
+        otp=otp_code
+    )
+
+    return {'detail':f'OTP sent to {email}'}
+
 
 
 
@@ -165,3 +195,6 @@ def count_students(db:Session):
     return {
         "total_students":students
     }
+
+
+

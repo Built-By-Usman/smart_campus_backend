@@ -1,7 +1,8 @@
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 APP_NAME = "Smart Campus backend" 
 
 def send_email_otp(to_email: str, otp: str):
@@ -31,7 +32,6 @@ def send_email_otp(to_email: str, otp: str):
         subject=f'{APP_NAME} OTP Verification',
         html_content=html_content
     )
-
-    sg = SendGridAPIClient(os.getenv("SENDGRID_KEY"))
+    sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
     response = sg.send(message)
     return response.status_code

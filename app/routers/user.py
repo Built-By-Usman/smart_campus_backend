@@ -54,7 +54,7 @@ def all_unauthenticated_students(db:Session=Depends(get_db),current_user:UserRes
 
 @router.put('/approve_unauthenticated_user',response_model=UserResponse)
 def approve_unauthenticated_user(id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
-   return approve_user(id=id,db=db,current_user_role=current_user.role)
+   return approve_user(id=id,db=db)
 
 
 
@@ -64,7 +64,7 @@ def create_user(request:UserCreate,db:Session=Depends(get_db)):
 
 @router.post('/verify_otp',response_model=UserResponse)
 def verify_otp(email:EmailStr,otp:str,db:Session=Depends(get_db)):
-   return verify(email=email,otp=otp,db=db)
+   return verify(email=email,otp_code=otp,db=db)
 
 @router.put('/{id}')
 def update_user(request:UserCreate,id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):

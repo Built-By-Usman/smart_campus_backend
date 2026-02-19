@@ -4,8 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine
 from app.db.base import base
 from app.routers import auth, user, course, assignment,submissions
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+load_dotenv()
+
 
 # alembic revision --autogenerate -m "create users table"
 # alembic upgrade head
