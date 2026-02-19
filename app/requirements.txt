@@ -7,3 +7,5 @@ pwdlib[argon2]
 pyjwt
 python-multipart
 alembic
+sendgrid
+python-dotenv

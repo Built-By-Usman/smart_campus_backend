@@ -2,9 +2,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.declarative import declarative_base
+import os 
+from dotenv import load_dotenv
 
 
-DATABASE_URL = "postgresql+psycopg2://postgres.spcohlicnsroxcfieipi:Shani.Malik321@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
+load_dotenv()
+DATABASE_URL=os.getenv("DATABASE_URL")
 
 engine=create_engine(DATABASE_URL,poolclass=NullPool)
 

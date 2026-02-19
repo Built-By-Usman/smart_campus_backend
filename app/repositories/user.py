@@ -1,9 +1,14 @@
 from app.models.user import UserModel
+from app.models.otp import OTPModel
 from app.schemas.user import UserCreate
 from sqlalchemy.orm import Session
 from fastapi import status,HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from app.services.hashing import get_hashed_password
+from app.services.email_sender import send_email_otp
+from app.services.otp_generation import generate_otp,otp_expiration
+from pydantic import EmailStr
+from datetime import datetime
 
 
 def all(db:Session):
@@ -38,7 +43,9 @@ def unauthenticated_students(db:Session):
     return unauthenticated_students
 
 
-def approve_user(id:int,db:Session):
+def approve_user(id:int,db:Session,current_user_role:str):
+    if not current_user_role=="admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="You are not authorized to make this changes")
     user = db.query(UserModel).filter(UserModel.id==id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
@@ -54,16 +61,67 @@ def create(request:UserCreate,db:Session):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="User with this email is already exist")
     
     hashed_password=get_hashed_password(request.password)
-    user=UserModel(name=request.name,email=request.email,password=hashed_password,role=request.role)
+    user=UserModel(name=request.name.title(),email=request.email,password=hashed_password,role=request.role.lower())
+
+    otp_code=generate_otp()
+    expire_at=otp_expiration()
+
+    otp=OTPModel(
+        email=request.email,
+        otp=otp_code,
+        expire_at=expire_at,
+        is_used=False
+    )
+
+    db.add(otp)
+    db.commit()
+
+    send_email_otp(
+        to_email=request.email,
+        otp=otp_code
+    )
+
+
 
     try:
+        db.add(otp)
+        db.commit()
+
+        send_email_otp(
+        to_email=request.email,
+        otp=otp_code
+    )
         db.add(user)
         db.commit()
         db.refresh(user)
-        return user
+        return {'detail':'Account created An otp send please verify your email address'}
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
+    
+def verify(email:EmailStr,otp_code:str,db:Session):
+    otp=db.query(OTPModel).filter(
+        OTPModel.email==email,
+        OTPModel.otp==otp_code,
+        OTPModel.expire_at>datetime.utcnow(),
+        OTPModel.is_used==False
+    ).first()
+    if not otp:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid or expire otp")
+    
+
+    otp.is_used=True
+    db.commit()
+
+    user=db.query(UserModel).filter(UserModel.email==email).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No user found with this email")
+
+    return user
+
+
+
     
 def update(id:int,request:UserCreate,db:Session):
      existing_email=db.query(UserModel).filter(UserModel.email==request.email).first()

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # 1. Import Middleware
+from fastapi.middleware.cors import CORSMiddleware 
 
 from app.db.database import engine
 from app.db.base import base
@@ -7,6 +7,8 @@ from app.routers import auth, user, course, assignment,submissions
 
 app = FastAPI()
 
+# alembic revision --autogenerate -m "create users table"
+# alembic upgrade head
 
 origins = [
     "http://localhost:5173",

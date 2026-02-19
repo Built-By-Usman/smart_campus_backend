@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserResponse,UserCreate
 from app.db.database import get_db
 from typing import List
-from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,count_students
+from app.repositories.user import all,create,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,count_students,verify
 from app.services.oauth2 import get_current_user
+from pydantic import EmailStr
 
 
 router=APIRouter(
@@ -53,16 +54,17 @@ def all_unauthenticated_students(db:Session=Depends(get_db),current_user:UserRes
 
 @router.put('/approve_unauthenticated_user',response_model=UserResponse)
 def approve_unauthenticated_user(id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
-   return approve_user(id=id,db=db)
+   return approve_user(id=id,db=db,current_user_role=current_user.role)
 
 
 
-
-
-
-@router.post('/',response_model=UserResponse)
+@router.post('/')
 def create_user(request:UserCreate,db:Session=Depends(get_db)):
    return create(request=request,db=db)
+
+@router.post('/verify_otp',response_model=UserResponse)
+def verify_otp(email:EmailStr,otp:str,db:Session=Depends(get_db)):
+   return verify(email=email,otp=otp,db=db)
 
 @router.put('/{id}')
 def update_user(request:UserCreate,id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):

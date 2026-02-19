@@ -28,7 +28,10 @@ def login_user(request:UserLogin ,db:Session):
         if not verify_password(request.password,user.password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Password is incorrect")
         if not user.is_authenticated:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Please ask admin to approve your account")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Please ask admin to approve your account")
+        if not user.is_verified_email:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Please verify you email address")
+        
 
 
         access_token = create_access_token(data={"sub": user.email})
