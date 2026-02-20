@@ -1,5 +1,5 @@
 from app.db.database import base
-
+# Hello World
 from app.models.user import UserModel
 from app.models.course import CourseModel
 from app.models.enrollment import EnrollmentModel
