@@ -1,0 +1,12 @@
+fastapi
+sqlalchemy
+uvicorn
+psycopg2-binary
+pydantic[email]
+pwdlib[argon2]
+pyjwt
+python-multipart
+alembic
+sendgrid
+python-dotenv
+resend
