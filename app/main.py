@@ -7,7 +7,7 @@ from app.routers import auth, user, course, assignment,submissions
 from dotenv import load_dotenv
 
 app = FastAPI( title="Smart Campus API",
-    root_path="/smart_campus")
+    root_path="/smart-campus")
 
 load_dotenv()
 
