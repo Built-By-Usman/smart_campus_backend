@@ -71,8 +71,6 @@ def create(request:UserCreate,db:Session):
         is_used=False
     )
 
-    db.add(otp)
-    db.commit()
 
     send_email_otp(
         to_email=request.email,
@@ -81,10 +79,7 @@ def create(request:UserCreate,db:Session):
 
     db.add(otp)
     db.commit()
-    send_email_otp(
-        to_email=request.email,
-        otp=otp_code
-    )
+    
     try:
 
         db.add(user)
@@ -126,7 +121,7 @@ def resend(email:EmailStr,db:Session):
     expire_at=otp_expiration()
 
     otp=OTPModel(
-        email=otp_code,
+        email=email,
         otp=otp_code,
         expire_at=expire_at,
         is_used=False
@@ -142,10 +137,6 @@ def resend(email:EmailStr,db:Session):
 
     db.add(otp)
     db.commit()
-    send_email_otp(
-        to_email=email,
-        otp=otp_code
-    )
 
     return {'detail':f'OTP sent to {email}'}
 

@@ -29,8 +29,9 @@ class UserResponse(UserBase):
     id:int
     role:str
     is_active:bool
-    is_authenticated=True
     is_authenticated:bool
+    is_authenticated:bool
+    is_verified_email:bool
     created_at:datetime
 
     class Config:
