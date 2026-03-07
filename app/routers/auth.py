@@ -13,5 +13,5 @@ router=APIRouter(
 )
 
 @router.post('/',response_model=Union[Token, TokenForAdmin])
-def login(request:UserLogin = Depends(),db:Session=Depends(get_db)):
+def login(request:UserLogin,db:Session=Depends(get_db)):
     return login_user(request=request,db=db)

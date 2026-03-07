@@ -31,6 +31,9 @@ def login_user(request:UserLogin ,db:Session):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Please ask admin to approve your account")
         if not user.is_verified_email:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Please verify you email address")
+        if user.role==request.role:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"You are not enroll as a {request.role}")
+
         
 
 

@@ -85,7 +85,7 @@ def create(request:UserCreate,db:Session):
         db.add(user)
         db.commit()
         db.refresh(user)
-        return {'detail':'Account created An otp send please verify your email address'}
+        return {'detail':'Account created an otp send please verify your email address'}
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
