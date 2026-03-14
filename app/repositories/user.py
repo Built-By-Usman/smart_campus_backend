@@ -1,6 +1,6 @@
 from app.models.user import UserModel
 from app.models.otp import OTPModel
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate,ApproveRejectUserSchema
 from sqlalchemy.orm import Session
 from fastapi import status,HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -9,6 +9,7 @@ from app.services.email_sender import send_email_otp
 from app.services.otp_generation import generate_otp,otp_expiration
 from pydantic import EmailStr
 from datetime import datetime
+from typing import List
 
 
 def all(db:Session):
@@ -31,115 +32,42 @@ def all_teachers(db:Session):
 
 
 def unauthenticated_teachers(db:Session):
-    unauthenticated_teachers = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher").all()
+    unauthenticated_teachers = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher",UserModel.is_active==True).all()
     if not unauthenticated_teachers:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unauthenticated teacher available")
+        raise HTTPException(status_code=status.HTTP_200_OK,detail="No unauthenticated teacher available")
     return unauthenticated_teachers
 
 def unauthenticated_students(db:Session):
-    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student").all()
+    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student",UserModel.is_active==True).all()
     if not unauthenticated_students:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No unauthenticated student available")
+        raise HTTPException(status_code=status.HTTP_200_OK,detail="No unauthenticated student available")
     return unauthenticated_students
 
 
-def approve_user(id:int,db:Session):
-    user = db.query(UserModel).filter(UserModel.id==id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
-    user.is_authenticated=True
-    db.commit()
-    db.refresh(user)
-    return user
+def approve_user(data:ApproveRejectUserSchema,db:Session):
+    for user_id in data.id:
+        user = db.query(UserModel).filter(UserModel.id==user_id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
+        user.is_authenticated=True
+
     
-
-def create(request:UserCreate,db:Session):
-    existing_user=db.query(UserModel).filter(UserModel.email==request.email).first()
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="User with this email is already exist")
-    
-    hashed_password=get_hashed_password(request.password)
-    user=UserModel(name=request.name.title(),email=request.email,password=hashed_password,role=request.role.lower())
-
-    otp_code=generate_otp()
-    expire_at=otp_expiration()
-
-    otp=OTPModel(
-        email=request.email,
-        otp=otp_code,
-        expire_at=expire_at,
-        is_used=False
-    )
-
-
-    send_email_otp(
-        to_email=request.email,
-        otp=otp_code
-    )
-
-    db.add(otp)
     db.commit()
+    return {'detail':'Approved successfully'}
+
+
+def decline_user(data:ApproveRejectUserSchema,db:Session):
+    for user_id in data.id:
+        user=db.query(UserModel).filter(UserModel.id==user_id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid user")
+        user.is_active=False
     
-    try:
+    db.commit()
+    return {'detail':'Declined Successfully'}
 
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return {'detail':'Account created an otp send please verify your email address'}
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
+
     
-def verify(email:EmailStr,otp_code:str,db:Session):
-    otp=db.query(OTPModel).filter(
-        OTPModel.email==email,
-        OTPModel.otp==otp_code,
-        OTPModel.expire_at>datetime.utcnow(),
-        OTPModel.is_used==False
-    ).first()
-    if not otp:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid or expire otp")
-    
-
-    otp.is_used=True
-    db.commit()
-
-    user=db.query(UserModel).filter(UserModel.email==email).first()
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No user found with this email")
-    
-
-    user.is_verified_email=True
-    db.commit()
-    db.refresh(user)
-
-    return user
-
-def resend(email:EmailStr,db:Session):
-    otp_code=generate_otp()
-    expire_at=otp_expiration()
-
-    otp=OTPModel(
-        email=email,
-        otp=otp_code,
-        expire_at=expire_at,
-        is_used=False
-    )
-
-    db.add(otp)
-    db.commit()
-
-    send_email_otp(
-        to_email=email,
-        otp=otp_code
-    )
-
-    db.add(otp)
-    db.commit()
-
-    return {'detail':f'OTP sent to {email}'}
-
 
 
 
@@ -185,6 +113,14 @@ def count_students(db:Session):
 
     return {
         "total_students":students
+    }
+
+
+def count_teachers(db:Session):
+    teachers=db.query(UserModel).filter(UserModel.role=='teacher',UserModel.is_authenticated==True).count()
+
+    return {
+        "total_teachers":teachers
     }
 
 

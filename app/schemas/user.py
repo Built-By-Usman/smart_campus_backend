@@ -1,5 +1,5 @@
 from pydantic import BaseModel,EmailStr
-from typing import Optional
+from typing import List
 from datetime import datetime
 
 
@@ -36,6 +36,10 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes=True
+
+
+class ApproveRejectUserSchema(BaseModel):
+    id:List[int];
 
 
 class Token(BaseModel):
