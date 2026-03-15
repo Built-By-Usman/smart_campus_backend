@@ -32,6 +32,7 @@ def unauthenticated_teachers(db:Session):
         raise HTTPException(status_code=status.HTTP_200_OK,detail="No unauthenticated teacher available")
     return unauthenticated_teachers
 
+
 def unauthenticated_students(db:Session):
     unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student",UserModel.is_active==True).all()
     if not unauthenticated_students:
