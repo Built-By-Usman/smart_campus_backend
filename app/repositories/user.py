@@ -1,15 +1,10 @@
 from app.models.user import UserModel
-from app.models.otp import OTPModel
+from app.models.course import CourseModel
+from app.models.complaint import ComplaintModel
 from app.schemas.user import UserCreate,ApproveRejectUserSchema
 from sqlalchemy.orm import Session
 from fastapi import status,HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from app.services.hashing import get_hashed_password
-from app.services.email_sender import send_email_otp
-from app.services.otp_generation import generate_otp,otp_expiration
-from pydantic import EmailStr
-from datetime import datetime
-from typing import List
 
 
 def all(db:Session):
@@ -108,20 +103,25 @@ def delete(id:int,db:Session):
     
 
 
-def count_students(db:Session):
+def load_dashboard(db:Session):
     students=db.query(UserModel).filter(UserModel.role=='student',UserModel.is_authenticated==True).count()
-
-    return {
-        "total_students":students
-    }
-
-
-def count_teachers(db:Session):
     teachers=db.query(UserModel).filter(UserModel.role=='teacher',UserModel.is_authenticated==True).count()
+    courses = db.query(CourseModel).count()
+    complaints = db.query(ComplaintModel).filter(ComplaintModel.status=='pending').count()
+
+    recentUsers = db.query(UserModel).order_by(UserModel.created_at.desc()).limit(5).all()
+    recentComplaints = db.query(ComplaintModel).order_by(ComplaintModel.id.desc()).limit(5).all()
 
     return {
-        "total_teachers":teachers
+        "total_students":students,
+        "total_teachers":teachers,
+        "active_courses":courses,
+        "pending_complaints":complaints,
+        "recent_users":recentUsers,
+        "recent_complaints":recentComplaints,
     }
+
+
 
 
 

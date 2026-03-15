@@ -1,6 +1,7 @@
 from pydantic import BaseModel,EmailStr
 from typing import List
 from datetime import datetime
+from app.schemas.complaint import ComplaintResponse
 
 
 
@@ -30,7 +31,6 @@ class UserResponse(UserBase):
     role:str
     is_active:bool
     is_authenticated:bool
-    is_authenticated:bool
     is_verified_email:bool
     created_at:datetime
 
@@ -39,7 +39,16 @@ class UserResponse(UserBase):
 
 
 class ApproveRejectUserSchema(BaseModel):
-    id:List[int];
+    id:List[int]
+
+class AdminDashboardResponse(BaseModel):
+    total_students: int
+    total_teachers: int
+    active_courses: int
+    pending_complaints: int
+    recent_users:List[UserResponse]
+    recent_complaints:List[ComplaintResponse]
+
 
 
 class Token(BaseModel):
