@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends
 from sqlalchemy.orm import Session
-from app.schemas.user import UserResponse,UserCreate,ApproveRejectUserSchema,AdminDashboardResponse
+from app.schemas.user import UserResponse,UserUpdate,ApproveRejectUserSchema,AdminDashboardResponse
 from app.db.database import get_db
 from typing import List
 from app.repositories.user import all,update,delete,all_teachers,all_students,unauthenticated_students,unauthenticated_teachers,approve_user,decline_user,load_dashboard
@@ -52,7 +52,7 @@ def decline_unauthenticated_user(data:ApproveRejectUserSchema,db:Session=Depends
 
 
 @router.put('/{id}/')
-def update_user(request:UserCreate,id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
+def update_user(request:UserUpdate,id:int,db:Session=Depends(get_db),current_user:UserResponse=Depends(get_current_user)):
    return update(id,request,db)
 
 @router.delete('/{id}/')

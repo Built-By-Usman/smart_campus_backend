@@ -12,6 +12,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password:str
     role:str
+class UserUpdate(UserBase):
+    role:str
+    is_active:bool
+    is_authenticated:bool
+    is_verified_email:bool
 
 class UserLogin(BaseModel):
     email:EmailStr

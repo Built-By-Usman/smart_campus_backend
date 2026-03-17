@@ -1,7 +1,7 @@
 from app.models.user import UserModel
 from app.models.course import CourseModel
 from app.models.complaint import ComplaintModel
-from app.schemas.user import UserCreate,ApproveRejectUserSchema
+from app.schemas.user import UserUpdate,ApproveRejectUserSchema
 from sqlalchemy.orm import Session
 from fastapi import status,HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -27,16 +27,12 @@ def all_teachers(db:Session):
 
 
 def unauthenticated_teachers(db:Session):
-    unauthenticated_teachers = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher",UserModel.is_active==True).all()
-    if not unauthenticated_teachers:
-        raise HTTPException(status_code=status.HTTP_200_OK,detail="No unauthenticated teacher available")
+    unauthenticated_teachers = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="teacher",UserModel.is_active==True,UserModel.is_verified_email==True).all()
     return unauthenticated_teachers
 
 
 def unauthenticated_students(db:Session):
-    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student",UserModel.is_active==True).all()
-    if not unauthenticated_students:
-        raise HTTPException(status_code=status.HTTP_200_OK,detail="No unauthenticated student available")
+    unauthenticated_students = db.query(UserModel).filter(UserModel.is_authenticated==False,UserModel.role=="student",UserModel.is_active==True,UserModel.is_verified_email==True).all()
     return unauthenticated_students
 
 
@@ -68,24 +64,44 @@ def decline_user(data:ApproveRejectUserSchema,db:Session):
 
 
     
-def update(id:int,request:UserCreate,db:Session):
-     existing_email=db.query(UserModel).filter(UserModel.email==request.email).first()
-     if existing_email:
-         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="This email is already registered")
-     user=db.query(UserModel).filter(UserModel.id==id)
+def update(id: int, request: UserUpdate, db: Session):
 
-     if not user:
-         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"User with id:{id} is not available")
-     
-     try:
-        user.update(request.dict(),synchronize_session=False)
+    # 🔎 Get user by ID
+    user = db.query(UserModel).filter(UserModel.id == id).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id:{id} is not available"
+        )
+
+    # 🔎 Check if email is being changed
+    if request.email and request.email != user.email:
+        existing_user = db.query(UserModel).filter(
+            UserModel.email == request.email
+        ).first()
+
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This email is already registered"
+            )
+
+    try:
+        for key, value in request.dict(exclude_unset=True).items():
+            setattr(user, key, value)
+
         db.commit()
-        return {"detail":"The book details are updated successfully"}
-     except SQLAlchemyError as e:
-         db.rollback()
-         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error")
+        db.refresh(user)
 
+        return {"detail": "The user details updated successfully"}
 
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database error"
+        )
 
 def delete(id:int,db:Session):
     user=db.query(UserModel).filter(UserModel.id==id)
