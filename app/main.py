@@ -14,6 +14,7 @@ load_dotenv()
 
 # alembic revision --autogenerate -m "create users table"
 # alembic upgrade head
+# sudo systemctl restart fastapi
 
 origins = [
     '*'

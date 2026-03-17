@@ -1,4 +1,6 @@
 from fastapi import APIRouter,Depends
+from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
 from sqlalchemy.orm import Session
 from app.schemas.user import Token,UserLogin,TokenForAdmin,UserCreate,UserResponse,VerifyOtp,ResendOtp
 from app.db.database import get_db
@@ -13,7 +15,7 @@ router=APIRouter(
 )
 
 @router.post('/login/',response_model=Union[Token, TokenForAdmin])
-def login(request:UserLogin,db:Session=Depends(get_db)):
+def login(request: Annotated[OAuth2PasswordRequestForm, Depends()],db:Session=Depends(get_db)):
     return login_user(request=request,db=db)
 
 
