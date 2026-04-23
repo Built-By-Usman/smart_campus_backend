@@ -31,7 +31,7 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)):
     return create(request=request, db=db)
 
 
-@router.post("/verify-otp/", response_model=UserResponse)
+@router.post("/verify-otp/")
 def verify_otp(request: VerifyOtp, db: Session = Depends(get_db)):
     return verify(email=request.email, otp_code=request.otp, db=db)
 
