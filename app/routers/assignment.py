@@ -1,31 +1,48 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.assignment import AssignmentCreate,AssignmentResponse
+from app.schemas.assignment import AssignmentCreate, AssignmentResponse
 from app.models.user import UserModel
 from app.services.oauth2 import get_current_user
 from typing import List
-from app.repositories.assignment import all,create,teacher_assignments,course_assignments
-
-
-router=APIRouter(
-    prefix='/assignments',
-    tags=['Assignment']
+from app.repositories.assignment import (
+    all,
+    create,
+    teacher_assignments,
+    course_assignments,
 )
 
-@router.get('/',response_model=List[AssignmentResponse])
-def get_all_assignments(db:Session=Depends(get_db),current_user:UserModel=Depends(get_current_user)):
+
+router = APIRouter(prefix="/assignments", tags=["Assignment"])
+
+
+@router.get("/", response_model=List[AssignmentResponse])
+def get_all_assignments(
+    db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)
+):
     return all(db=db)
 
-@router.get('/teacher-assignments/{teacher_id}/',response_model=List[AssignmentResponse])
-def get_all_assignments(teacher_id:int,db:Session=Depends(get_db),current_user:UserModel=Depends(get_current_user)):
-    return teacher_assignments(teacher_id=teacher_id,db=db)
+
+@router.get("/teacher-assignments/", response_model=List[AssignmentResponse])
+def get_all_assignments(
+    db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)
+):
+    return teacher_assignments(teacher_id=current_user.id, db=db)
 
 
-@router.get('/course-assignments/{teacher_id}/',response_model=List[AssignmentResponse])
-def get_all_assignments(course_id:int,db:Session=Depends(get_db),current_user:UserModel=Depends(get_current_user)):
-    return course_assignments(course_id=course_id,db=db)
+@router.get("/course-assignments/{course_id}/", response_model=List[AssignmentResponse])
+def get_all_assignments(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    return course_assignments(course_id=course_id, db=db)
 
-@router.post('/',response_model=AssignmentResponse)
-def create_assignment(request:AssignmentCreate,db:Session=Depends(get_db),current_user:UserModel=Depends(get_current_user)):
-    return create(request=request,db=db)
+
+@router.post("/", response_model=AssignmentResponse)
+def create_assignment(
+    request: AssignmentCreate,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    return create(request=request, teacher_id=current_user.id, db=db)

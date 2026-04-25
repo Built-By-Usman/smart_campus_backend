@@ -125,11 +125,6 @@ def enrollment(request: EnrollmentCreate, db: Session):
 
 def teacher_courses(teacher_id: int, db: Session):
     courses = db.query(CourseModel).filter(CourseModel.teacher_id == teacher_id).all()
-    if not courses:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No course assigned to this teacher",
-        )
     return courses
 
 
@@ -137,9 +132,19 @@ def student_courses(student_id: int, db: Session):
     courses = (
         db.query(EnrollmentModel).filter(EnrollmentModel.student_id == student_id).all()
     )
-    if not courses:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="This student have no enrollment in any course",
-        )
+    return courses
+
+
+def count_student_courses(student_id: int, db: Session):
+    courses = (
+        db.query(EnrollmentModel)
+        .filter(EnrollmentModel.student_id == student_id)
+        .count()
+    )
+
+    return courses
+
+
+def count_teacher_courses(teacher_id: int, db: Session):
+    courses = db.query(CourseModel).filter(CourseModel.teacher_id == teacher_id).all()
     return courses
