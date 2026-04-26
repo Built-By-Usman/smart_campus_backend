@@ -180,11 +180,9 @@ def load_dashboard(db: Session):
             db.query(ComplaintModel).filter(ComplaintModel.status == "pending").count()
         )
 
-        recentUsers = (
-            db.query(UserModel).order_by(UserModel.created_at.desc()).limit(5).all()
-        )
+        recentUsers = db.query(UserModel).order_by(UserModel.created_at.desc()).all()
         recentComplaints = (
-            db.query(ComplaintModel).order_by(ComplaintModel.id.desc()).limit(5).all()
+            db.query(ComplaintModel).order_by(ComplaintModel.id.desc()).all()
         )
 
         return {

@@ -64,7 +64,7 @@ def create_course(
     return create(request=request, db=db)
 
 
-@router.post("/enroll/")
+@router.post("/enroll/", response_model=EnrollmentResponse)
 def enroll_student(
     request: EnrollmentCreate,
     db: Session = Depends(get_db),

@@ -89,9 +89,27 @@ def create(request: CourseCreate, db: Session):
         )
 
 
-def enrollment(request: EnrollmentCreate, db: Session):
+from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
+
+def enrollment(request: EnrollmentCreate, db: Session):
     try:
+        existing = (
+            db.query(EnrollmentModel)
+            .filter(
+                EnrollmentModel.student_id == request.student_id,
+                EnrollmentModel.course_id == request.course_id,
+            )
+            .first()
+        )
+
+        if existing:
+            raise HTTPException(
+                status_code=400, detail="Student already enrolled in this course"
+            )
+
+        # ✅ CREATE enrollment
         enrollment = EnrollmentModel(
             student_id=request.student_id, course_id=request.course_id
         )
@@ -110,11 +128,23 @@ def enrollment(request: EnrollmentCreate, db: Session):
         )
 
         if chat_room:
-            db.add(
-                ChatMemberModel(chat_room_id=chat_room.id, user_id=request.student_id)
+            # OPTIONAL: duplicate chat member check
+            existing_member = (
+                db.query(ChatMemberModel)
+                .filter(
+                    ChatMemberModel.chat_room_id == chat_room.id,
+                    ChatMemberModel.user_id == request.student_id,
+                )
+                .first()
             )
 
-            db.commit()
+            if not existing_member:
+                db.add(
+                    ChatMemberModel(
+                        chat_room_id=chat_room.id, user_id=request.student_id
+                    )
+                )
+                db.commit()
 
         return enrollment
 
