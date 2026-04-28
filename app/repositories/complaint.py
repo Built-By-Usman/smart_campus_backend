@@ -70,35 +70,22 @@ def get_student_complaints(student_id: int, db: Session):
 # ----------------------------
 def update_complaint_status(complaint_id: int, request: ComplaintStatusUpdate, db: Session):
     try:
-        complaint = (
-            db.query(ComplaintModel).filter(ComplaintModel.id == complaint_id).first()
-        )
+        complaint = db.query(ComplaintModel).filter(ComplaintModel.id == complaint_id).first()
 
         if not complaint:
-            raise HTTPException(
-                status_code=404, detail="Complaint not found"
-            )
+            raise HTTPException(status_code=404, detail="Complaint not found")
 
-        # Update status
+        if request.status == "declined" and not request.message:
+             raise HTTPException(status_code=400, detail="A reason is required when declining.")
 
         complaint.status = request.status
-        
-        # If status is declined, ensure a reason is provided
-
-        if request.status.lower() == "declined" or request.status.lower() == "rejected":
-            if not request.rejection_reason:
-                raise HTTPException(status_code=400, detail="A reason is required when declining a complaint.")
-            complaint.rejection_reason = request.rejection_reason
-        else:
-            # Optional: Clear reason if status is changed back to pending/approved
-            
-            complaint.rejection_reason = None
+        complaint.message = request.message 
 
         db.commit()
         db.refresh(complaint)
         return complaint
 
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(
             status_code=500,

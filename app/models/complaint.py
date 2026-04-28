@@ -9,4 +9,4 @@ class ComplaintModel(base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     status = Column(String, default="pending")
-    rejection_reason = Column(String, nullable=True)
+    message= Column(String, nullable=True)
