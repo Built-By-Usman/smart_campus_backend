@@ -7,6 +7,8 @@ from app.schemas.complaint import ComplaintResponse, ComplaintCreate
 from app.models.complaint import ComplaintModel
 from app.services.oauth2 import get_current_user
 
+from app.schemas.complaint import ComplaintResponse, ComplaintCreate, ComplaintStatusUpdate
+
 from app.repositories.complaint import (
     create_complaint,
     get_student_complaints,
@@ -71,11 +73,12 @@ def single_complaint(
 @router.patch("/{complaint_id}/status", response_model=ComplaintResponse)
 def change_status(
     complaint_id: int,
-    status: str,
+    request: ComplaintStatusUpdate, 
     db: Session = Depends(get_db),
     current_user: ComplaintModel = Depends(get_current_user),
 ):
-    return update_complaint_status(complaint_id=complaint_id, status=status, db=db)
+    
+    return update_complaint_status(complaint_id=complaint_id, request=request, db=db)
 
 
 # ----------------------------

@@ -1,7 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey
 from app.db.database import base
 
-
 class ComplaintModel(base):
     __tablename__ = "complaints"
 
@@ -10,3 +9,4 @@ class ComplaintModel(base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     status = Column(String, default="pending")
+    rejection_reason = Column(String, nullable=True)

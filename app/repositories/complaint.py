@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 
 from app.models.complaint import ComplaintModel
 from app.schemas.complaint import ComplaintCreate
+from app.schemas.complaint import ComplaintCreate, ComplaintStatusUpdate
 
 
 # ----------------------------
@@ -67,7 +68,7 @@ def get_student_complaints(student_id: int, db: Session):
 # ----------------------------
 # UPDATE COMPLAINT STATUS
 # ----------------------------
-def update_complaint_status(complaint_id: int, status: str, db: Session):
+def update_complaint_status(complaint_id: int, request: ComplaintStatusUpdate, db: Session):
     try:
         complaint = (
             db.query(ComplaintModel).filter(ComplaintModel.id == complaint_id).first()
@@ -75,24 +76,34 @@ def update_complaint_status(complaint_id: int, status: str, db: Session):
 
         if not complaint:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Complaint not found"
+                status_code=404, detail="Complaint not found"
             )
 
-        complaint.status = status
+        # Update status
+
+        complaint.status = request.status
+        
+        # If status is declined, ensure a reason is provided
+
+        if request.status.lower() == "declined" or request.status.lower() == "rejected":
+            if not request.rejection_reason:
+                raise HTTPException(status_code=400, detail="A reason is required when declining a complaint.")
+            complaint.rejection_reason = request.rejection_reason
+        else:
+            # Optional: Clear reason if status is changed back to pending/approved
+            
+            complaint.rejection_reason = None
 
         db.commit()
         db.refresh(complaint)
-
         return complaint
 
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
             detail="Database error while updating complaint",
         )
-
-
 # ----------------------------
 # DELETE COMPLAINT (ADMIN)
 # ----------------------------
