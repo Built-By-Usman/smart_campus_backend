@@ -11,6 +11,7 @@ app = FastAPI(title="Smart Campus API", root_path="/smart-campus")
 load_dotenv()
 
 
+
 # alembic revision --autogenerate -m "create users table"
 # alembic upgrade head
 # sudo systemctl restart fastapi

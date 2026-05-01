@@ -2,7 +2,12 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from app.db.base import base
+
+from app.db.database import base  #
+from app.models.user import UserModel
+from app.models.complaint import ComplaintModel
+from app.models.chat import ChatRoomModel, MessageModel 
+
 
 from alembic import context
 from app.db.database import DATABASE_URL

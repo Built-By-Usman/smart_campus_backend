@@ -8,7 +8,7 @@ class ComplaintCreate(BaseModel):
 # --- NEW SCHEMA ---
 class ComplaintStatusUpdate(BaseModel):
     status: str
-    rejection_reason: Optional[str] = None
+    message: Optional[str] = None
 
 class ComplaintResponse(BaseModel):
     id: int
@@ -16,7 +16,7 @@ class ComplaintResponse(BaseModel):
     title: str
     description: str
     status: str
-    rejection_reason: Optional[str] = None 
+    message: Optional[str] = None 
 
     class Config:
         from_attributes = True
